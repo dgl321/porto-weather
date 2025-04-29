@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Porto Weather Widget</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: centre;
+      height: 100%;
+      colour: #333;
+    }
+    #weather-widget {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: centre;
+      width: 280px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    h2 {
+      margin: 0 0 10px 0;
+      font-size: 22px;
+    }
+    .current {
+      font-size: 36px;
+      margin: 10px 0;
+    }
+    .small-text {
+      font-size: 12px;
+      colour: #777;
+    }
+    .forecast {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 15px;
+    }
+    .day {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      padding: 5px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .day:last-child {
+      border-bottom: none;
+    }
+    .day img {
+      width: 30px;
+      height: 30px;
+    }
+    .temps {
+      font-size: 13px;
+      colour: #555;
+    }
+  </style>
+</head>
+<body>
+
+<div id="weather-widget">
+  <h2>Porto Weather</h2>
+  <div class="current" id="current-temp">--°C</div>
+  <div class="small-text" id="current-desc">Loading...</div>
+  <div class="forecast" id="forecast">
+    <!-- Forecast days will be inserted here -->
+  </div>
+</div>
+
+<script>
+async function fetchWeather() {
+  const url = "https://api.open-meteo.com/v1/forecast";
+  const params = {
+    latitude: 41.1496,
+    longitude: -8.611,
+    daily: "temperature_2m_max,temperature_2m_min,weathercode",
+    current_weather: true,
+    timezone: "auto"
+  };
+  
+  try {
+    const response = await fetch(`${url}?latitude=${params.latitude}&longitude=${params.longitude}&daily=${params.daily}&current_weather=true&timezone=auto`);
+    const data = await response.json();
+
+    // Set current weather
+    const currentTemp = Math.round(data.current_weather.temperature);
+    const currentWeatherCode = data.current_weather.weathercode;
+    document.getElementById('current-temp').textContent = `${currentTemp}°C`;
+    document.getElementById('current-desc').textContent = mapWeatherCode(currentWeatherCode);
+
+    // Set daily forecast
+    const daysContainer = document.getElementById('forecast');
+    const days = data.daily.time;
+    const maxTemps = data.daily.temperature_2m_max;
+    const minTemps = data.daily.temperature_2m_min;
+    const weatherCodes = data.daily.weathercode;
+
+    for (let i = 0; i < 5; i++) {
+      const date = new Date(days[i]);
+      const dayName = date.toLocaleDateString('en-GB', { weekday: 'short' }); // eg. "Mon", "Tue"
+      const max = Math.round(maxTemps[i]);
+      const min = Math.round(minTemps[i]);
+      const code = weatherCodes[i];
+
+      const dayElement = document.createElement('div');
+      dayElement.className = 'day';
+      dayElement.innerHTML = `
+        <div>${dayName}</div>
+        <img src="${getIconURL(code)}" alt="">
+        <div class="temps">${max}° / ${min}°</div>
+      `;
+      daysContainer.appendChild(dayElement);
+    }
+  } catch (error) {
+    console.error('Failed to fetch weather', error);
+    document.getElementById('current-desc').textContent = "Unable to load";
+  }
+}
+
+function mapWeatherCode(code) {
+  // Simplified descriptions
+  if ([0].includes(code)) return "Clear";
+  if ([1,2,3].includes(code)) return "Partly Cloudy";
+  if ([45,48].includes(code)) return "Foggy";
+  if ([51,53,55,61,63,65,80,81,82].includes(code)) return "Rainy";
+  if ([71,73,75,77,85,86].includes(code)) return "Snowy";
+  if ([95,96,99].includes(code)) return "Stormy";
+  return "Unknown";
+}
+
+function getIconURL(code) {
+  if ([0].includes(code)) return "https://img.icons8.com/fluency/48/000000/sun.png";
+  if ([1,2,3].includes(code)) return "https://img.icons8.com/fluency/48/000000/partly-cloudy-day.png";
+  if ([45,48].includes(code)) return "https://img.icons8.com/fluency/48/000000/fog-day.png";
+  if ([51,53,55,61,63,65,80,81,82].includes(code)) return "https://img.icons8.com/fluency/48/000000/rain.png";
+  if ([71,73,75,77,85,86].includes(code)) return "https://img.icons8.com/fluency/48/000000/snow.png";
+  if ([95,96,99].includes(code)) return "https://img.icons8.com/fluency/48/000000/storm.png";
+  return "https://img.icons8.com/fluency/48/000000/question-mark.png";
+}
+
+fetchWeather();
+</script>
+
+</body>
+</html>
