@@ -1,0 +1,25 @@
+{
+  "name": "porto-weather",
+  "version": "1.0.0",
+  "description": "porto-weather",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dgl321/porto-weather.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dgl321/porto-weather/issues"
+  },
+  "homepage": "https://github.com/dgl321/porto-weather#readme",
+  "dependencies": {
+    "chrome-aws-lambda": "^10.1.0",
+    "puppeteer": "^24.7.2",
+    "puppeteer-core": "^10.4.0"
+  }
+}
